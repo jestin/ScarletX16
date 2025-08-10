@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "paint_canvas.h": "c",
+        "utils.h": "c",
+        "draw_tools_utils.h": "c",
+        "ui_utils.h": "c",
+        "history_stack.h": "c"
+    }
+}
