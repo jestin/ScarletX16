@@ -12,22 +12,31 @@ u8 last_y = 0;
 u8 length_counter = 0;
 u8 curr_col;
 void add_history_node_position(u8 x, u8 y, u8 colour){
-    if(last_x!=x || last_y!=y){
-        if(length_counter == 255) add_new_history_node();
+    if(x<(*bmx_width) && y<(*bmx_height)){
+        if(last_x!=x || last_y!=y){
+            if(length_counter == 255) add_new_history_node();
 
-        if(starting_new_node){
-            curr_col = colour;
-            node_start_pos = HIS_STACK_ADDR;
-            starting_new_node = 0;
-            HIS_STACK_ADDR += 2;
-            length_counter = 0;
+            if(starting_new_node){
+                curr_col = colour;
+                node_start_pos = HIS_STACK_ADDR;
+                starting_new_node = 0;
+                HIS_STACK_ADDR += 2;
+                length_counter = 0;
+            }
+
+
+            last_x = x;
+            last_y = y;
+            length_counter += 1;
+            _add_history_node_position(x,y);
         }
+    }
+}
 
-
-        last_x = x;
-        last_y = y;
-        length_counter += 1;
-        _add_history_node_position(x,y);
+void add_history_node_row(u8 width, u8 x, u8 y, u8 colour){
+    u8 i;
+    for(i=0; i<width; i++){
+        add_history_node_position(x+i,y,colour);
     }
 }
 

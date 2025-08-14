@@ -14,9 +14,12 @@
 	.import		__get_history_byte
 	.import		__get_history_redo_byte
 	.export		_add_history_node_position
+	.export		_add_history_node_row
 	.export		_add_new_history_node
 	.export		_restore_last_history_node
 	.export		_undo_last_history_node
+	.import		_bmx_width
+	.import		_bmx_height
 	.import		__draw_canvas_to_screen
 	.import		__draw_row_to_sprite
 	.export		_node_start_pos
@@ -55,20 +58,36 @@ _curr_col:
 .segment	"CODE"
 
 	jsr     pusha
+	ldy     #$02
+	lda     (sp),y
+	jsr     pusha0
+	lda     _bmx_width
+	ldx     _bmx_width+1
+	jsr     ldaxi
+	jsr     tosicmp
+	bcs     L0006
+	ldy     #$01
+	lda     (sp),y
+	jsr     pusha0
+	lda     _bmx_height
+	ldx     _bmx_height+1
+	jsr     ldaxi
+	jsr     tosicmp
+	bcs     L0006
 	lda     _last_x
 	ldy     #$02
 	cmp     (sp),y
-	bne     L0008
+	bne     L000C
 	lda     _last_y
 	dey
 	cmp     (sp),y
-	beq     L0002
-L0008:	lda     _length_counter
-	cmp     #$FF
-	bne     L0005
-	jsr     _add_new_history_node
-L0005:	lda     _starting_new_node
 	beq     L0006
+L000C:	lda     _length_counter
+	cmp     #$FF
+	bne     L0009
+	jsr     _add_new_history_node
+L0009:	lda     _starting_new_node
+	beq     L000A
 	lda     (sp)
 	sta     _curr_col
 	lda     $0056+1
@@ -80,10 +99,10 @@ L0005:	lda     _starting_new_node
 	clc
 	adc     $0056
 	sta     $0056
-	bcc     L0007
+	bcc     L000B
 	inc     $0056+1
-L0007:	stz     _length_counter
-L0006:	ldy     #$02
+L000B:	stz     _length_counter
+L000A:	ldy     #$02
 	lda     (sp),y
 	sta     _last_x
 	dey
@@ -96,7 +115,43 @@ L0006:	ldy     #$02
 	ldy     #$02
 	lda     (sp),y
 	jsr     __add_history_node_position
-L0002:	jmp     incsp3
+L0006:	jmp     incsp3
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ add_history_node_row (unsigned char width, unsigned char x, unsigned char y, unsigned char colour)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_add_history_node_row: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	jsr     decsp1
+	lda     #$00
+L0007:	sta     (sp)
+	ldy     #$04
+	cmp     (sp),y
+	bcs     L0003
+	lda     (sp)
+	clc
+	dey
+	adc     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     _add_history_node_position
+	clc
+	lda     #$01
+	adc     (sp)
+	bra     L0007
+L0003:	jmp     incsp5
 
 .endproc
 

@@ -6,13 +6,13 @@
 #include "paint_ui.h"
 #include "paint_canvas.h"
 #include "history_stack.h"
-#include "draw_tools_utils.h"
+#include "sprite_tools/draw_tools_utils.h"
 
 #define LFN 15
 #define DEVICE 8
 #define SA 2
 #define MODE 0
-char filename[] = "fruit.bmx";
+char filename[] = "breakfast.bmx";
 void load_bmx_file(){
     u16 vram_addr = SPRITE_VRAM_DATA_ADDR;
     u8 ram_bank = 2;

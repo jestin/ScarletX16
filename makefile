@@ -1,6 +1,6 @@
-ALL_ASM = $(wildcard src/*.asm) $(wildcard src/*.inc)
+ALL_ASM = $(wildcard src/*.asm) $(wildcard src/*.inc) $(wildcard src/*/*.asm) $(wildcard src/*/*.inc)
 ALL_C = src/main.c
-ALL_OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c)) $(patsubst %.asm,%.obj,$(wildcard src/*.asm))
+ALL_OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c)) $(patsubst %.asm,%.obj,$(wildcard src/*.asm)) $(patsubst %.c,%.o,$(wildcard src/*/*.c)) $(patsubst %.asm,%.obj,$(wildcard src/*/*.asm))
 
 all: $(ALL_OBJS)
 	cl65 -t cx16 -Osir -Cl -C src/cx16-bank.cfg -o export/SCARLET.PRG $(ALL_OBJS)
@@ -25,6 +25,11 @@ clean:
 	del $(subst /,\, $(CURDIR)\src\*.o)
 	del $(subst /,\, $(CURDIR)\src\*.obj)
 	del $(subst /,\, $(CURDIR)\src\*.list)
+
+	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.s)
+	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.o)
+	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.obj)
+	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.list)
 
 # 	del $(subst /,\, $(CURDIR)\export\*.prg.*)
 # 	del $(subst /,\, $(CURDIR)\export\*.spr)
