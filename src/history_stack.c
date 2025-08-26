@@ -40,6 +40,13 @@ void add_history_node_row(u8 width, u8 x, u8 y, u8 colour){
     }
 }
 
+void add_history_node_column(u8 height, u8 x, u8 y, u8 colour){
+    u8 i;
+    for(i=0; i<height; i++){
+        add_history_node_position(x,y+i,colour);
+    }
+}
+
 void add_new_history_node(){
     u8 *addr = HIS_STACK_ADDR;    
     *addr = length_counter;

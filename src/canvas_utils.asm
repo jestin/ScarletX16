@@ -9,6 +9,7 @@
 .export __transfer_pal_to_vera
 .export __image_data_size
 .export __draw_row_to_sprite
+.export __draw_column_to_sprite
 .export __get_pixel
 
 .export __add_history_node_position
@@ -150,6 +151,56 @@ __draw_row_to_sprite:
     dex
     bne @row_loop
 
+    rts
+
+__draw_column_to_sprite:
+    stz PIX_ADDR+1
+    sta PIX_ADDR
+    ldy __x_axis
+
+    @multiply_height:
+        asl PIX_ADDR
+        rol PIX_ADDR+1
+    dey
+    bne @multiply_height
+
+    lda PIX_ADDR
+    clc
+    adc (sp)
+    sta PIX_ADDR
+    lda PIX_ADDR+1
+    adc #0
+    sta PIX_ADDR+1
+    inc sp
+
+    stz VERA_ctrl
+    lda PIX_ADDR
+    clc
+    adc #(<SPRITE_VRAM_DATA_ADDR)
+    sta VERA_addr_low
+    lda PIX_ADDR+1
+    adc #(>SPRITE_VRAM_DATA_ADDR)
+    sta VERA_addr_high
+    lda __x_axis
+    .repeat 4
+        asl
+    .endrepeat
+    clc
+    adc #(%00010000)
+    sta VERA_addr_bank
+    
+
+    lda (sp)
+    inc sp
+    tax
+    lda (sp)
+    inc sp
+    @row_loop:
+        sta VERA_data0
+    dex
+    bne @row_loop
+
+    
     rts
 
 SPR_ADDR = ZP_PTR_1

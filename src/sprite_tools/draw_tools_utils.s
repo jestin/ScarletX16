@@ -13,6 +13,7 @@
 	.import		__set_sprite_attribute
 	.import		__set_sprite_address
 	.export		_draw_pixel_to_sprite
+	.export		_draw_brush_line
 	.export		_draw_pixel_line
 	.export		_tool_handler
 	.export		_set_pal_icon_sprites
@@ -24,6 +25,7 @@
 	.import		_bmx_no_pals
 	.import		__canvas_pow_scale
 	.import		__draw_canvas_to_screen
+	.import		__draw_row_to_screen
 	.import		__draw_row_to_sprite
 	.import		__get_pixel
 	.import		_add_history_node_position
@@ -33,6 +35,8 @@
 	.import		_draw_brush_to_sprite
 	.export		_draw_pixel_line_h
 	.export		_draw_pixel_line_v
+	.export		_draw_brush_line_h
+	.export		_draw_brush_line_v
 	.export		_mouse_addrs
 	.export		_was_drawing_last_frame
 	.export		_old_pix_x
@@ -84,7 +88,7 @@ _old_pix_y:
 _old_button:
 	.byte	$00
 _brush_size:
-	.byte	$04
+	.byte	$02
 _fill_offset_arr_x:
 	.byte	$01
 	.byte	$ff
@@ -106,7 +110,7 @@ _queue_length:
 _abort_flood_fill:
 	.byte	$00
 _line_brush_size:
-	.byte	$02
+	.byte	$04
 _point_selected:
 	.byte	$00
 _icon_x:
@@ -149,19 +153,6 @@ _previous_point_y:
 	bra     L0008
 L0007:	lda     __secondary_colour
 L0008:	sta     (sp)
-	ldy     #$03
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$03
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$02
-	lda     (sp),y
-	jsr     pusha
-	lda     _brush_size
-	jsr     pusha
-	lda     _brush_type
-	jsr     _draw_brush_to_sprite
 	lda     _was_drawing_last_frame
 	beq     L0004
 	lda     _old_pix_x
@@ -180,7 +171,7 @@ L0008:	sta     (sp)
 	lda     _brush_size
 	jsr     pusha
 	lda     _brush_type
-	jsr     _draw_pixel_line
+	jsr     _draw_brush_line
 	bra     L0005
 L0004:	ldy     #$03
 	lda     (sp),y
@@ -194,21 +185,22 @@ L0004:	ldy     #$03
 	lda     _brush_size
 	jsr     pusha
 	lda     _brush_type
-	jsr     _draw_brush_to_sprite
-L0005:	jsr     __draw_canvas_to_screen
+	jsr     pusha
 	lda     #$01
+	jsr     _draw_brush_to_sprite
+L0005:	lda     #$01
 	sta     _was_drawing_last_frame
 	jmp     incsp4
 
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_pixel_line (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
+; void __near__ draw_brush_line (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_draw_pixel_line: near
+.proc	_draw_brush_line: near
 
 .segment	"CODE"
 
@@ -272,7 +264,7 @@ L0011:	sbc     (sp),y
 	jsr     pusha
 	ldy     #$08
 	lda     (sp),y
-	jsr     _draw_pixel_line_h
+	jsr     _draw_brush_line_h
 	bra     L0007
 L0006:	ldy     #$08
 	lda     (sp),y
@@ -294,9 +286,94 @@ L0006:	ldy     #$08
 	jsr     pusha
 	ldy     #$08
 	lda     (sp),y
-	jsr     _draw_pixel_line_v
+	jsr     _draw_brush_line_v
 L0007:	ldy     #$09
 	jmp     addysp
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_pixel_line (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_pixel_line: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	jsr     decsp2
+	ldy     #$06
+	lda     (sp),y
+	ldy     #$04
+	cmp     (sp),y
+	bcc     L000B
+	beq     L000B
+	ldy     #$06
+	lda     (sp),y
+	sec
+	ldy     #$04
+	bra     L0010
+L000B:	lda     (sp),y
+	sec
+	ldy     #$06
+L0010:	sbc     (sp),y
+	ldy     #$01
+	sta     (sp),y
+	ldy     #$05
+	lda     (sp),y
+	ldy     #$03
+	cmp     (sp),y
+	bcc     L000D
+	beq     L000D
+	ldy     #$05
+	lda     (sp),y
+	sec
+	ldy     #$03
+	bra     L0011
+L000D:	lda     (sp),y
+	sec
+	ldy     #$05
+L0011:	sbc     (sp),y
+	sta     (sp)
+	ldy     #$01
+	lda     (sp),y
+	cmp     (sp)
+	bcc     L0006
+	beq     L0006
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     _draw_pixel_line_h
+	jmp     incsp7
+L0006:	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$06
+	lda     (sp),y
+	jsr     _draw_pixel_line_v
+	jmp     incsp7
 
 .endproc
 
@@ -629,7 +706,7 @@ L0024:	lda     (sp)
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_pixel_line_h (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
+; void __near__ draw_pixel_line_h (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
@@ -643,63 +720,65 @@ L0024:	lda     (sp)
 	lda     #$00
 	jsr     pusha
 	jsr     decsp2
-	ldy     #$0D
-	lda     (sp),y
-	ldy     #$0B
-	cmp     (sp),y
-	bcc     L0013
-	beq     L0013
-	ldy     #$0D
-	lda     (sp),y
+	lda     #$00
 	jsr     pusha
 	ldy     #$0C
 	lda     (sp),y
-	ldy     #$0E
+	ldy     #$0A
+	cmp     (sp),y
+	bcc     L0013
+	beq     L0013
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0B
+	lda     (sp),y
+	ldy     #$0D
 	sta     (sp),y
 	lda     (sp)
-	ldy     #$0C
+	ldy     #$0B
 	sta     (sp),y
 	iny
 	lda     (sp),y
 	sta     (sp)
-	ldy     #$0B
+	ldy     #$0A
 	lda     (sp),y
-	ldy     #$0D
+	ldy     #$0C
 	sta     (sp),y
 	lda     (sp)
-	ldy     #$0B
+	ldy     #$0A
 	sta     (sp),y
 	jsr     incsp1
 L0013:	lda     (sp),y
 	sec
-	ldy     #$0D
+	ldy     #$0C
+	sbc     (sp),y
+	ldy     #$07
+	sta     (sp),y
+	ldy     #$09
+	lda     (sp),y
+	sec
+	ldy     #$0B
 	sbc     (sp),y
 	ldy     #$06
 	sta     (sp),y
-	ldy     #$0A
+	ldy     #$0B
 	lda     (sp),y
-	sec
-	ldy     #$0C
-	sbc     (sp),y
-	ldy     #$05
-	sta     (sp),y
-	ldy     #$0C
-	lda     (sp),y
-	ldy     #$0A
+	ldy     #$09
 	cmp     (sp),y
 	bcc     L0003
 	beq     L0003
 	lda     #$01
-	ldy     #$02
+	ldy     #$03
 	sta     (sp),y
-	ldy     #$0C
+	ldy     #$0B
 	lda     (sp),y
 	sec
-	ldy     #$0A
+	ldy     #$09
 	sbc     (sp),y
-	ldy     #$05
+	ldy     #$06
 	sta     (sp),y
-L0003:	ldy     #$05
+L0003:	ldy     #$06
 	ldx     #$00
 	lda     (sp),y
 	asl     a
@@ -713,37 +792,52 @@ L000C:	sec
 	sbc     #$00
 	tax
 	pla
-	ldy     #$03
+	ldy     #$04
 	jsr     staxysp
-	ldy     #$0D
-	lda     (sp),y
-	sta     (sp)
-	dey
+	ldy     #$0C
 	lda     (sp),y
 	ldy     #$01
 	sta     (sp),y
-	ldy     #$0D
-	lda     (sp),y
-L0010:	sta     (sp)
 	ldy     #$0B
+	lda     (sp),y
+	ldy     #$02
+	sta     (sp),y
+	ldy     #$0C
+	lda     (sp),y
+	ldy     #$01
+L0010:	sta     (sp),y
+	ldy     #$0A
 	cmp     (sp),y
 	beq     L0011
-	bcs     L0005
-L0011:	lda     (sp)
+	jcs     L0005
+L0011:	clc
+	lda     #$01
+	adc     (sp)
+	sta     (sp)
+	ldy     #$01
+	lda     (sp),y
 	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0A
+	lda     (sp),y
+	jsr     _add_history_node_position
+	ldy     #$08
+	lda     (sp),y
+	jsr     pusha
+	lda     #$01
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$05
+	lda     (sp),y
+	jsr     __draw_row_to_sprite
 	ldy     #$02
 	lda     (sp),y
-	jsr     pusha
-	ldy     #$0B
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$0B
-	lda     (sp),y
-	jsr     pusha
-	ldy     #$0B
-	lda     (sp),y
-	jsr     _draw_brush_to_sprite
-	ldy     #$04
+	jsr     __draw_row_to_screen
+	ldy     #$05
 	jsr     ldaxysp
 	cmp     #$01
 	txa
@@ -751,7 +845,7 @@ L0011:	lda     (sp)
 	bvs     L0009
 	eor     #$80
 L0009:	bpl     L0008
-	ldy     #$02
+	ldy     #$03
 	lda     (sp),y
 	beq     L000A
 	dey
@@ -761,36 +855,42 @@ L0009:	bpl     L0008
 	bra     L000F
 L000A:	dey
 	clc
-	tya
+	ina
 	adc     (sp),y
 L000F:	sta     (sp),y
-	ldy     #$06
+	ldy     #$07
 	ldx     #$00
 	lda     (sp),y
 	asl     a
 	bcc     L000D
 	inx
-L000D:	ldy     #$03
+L000D:	ldy     #$04
 	jsr     subeqysp
-L0008:	ldy     #$05
+	lda     #$00
+	sta     (sp)
+L0008:	ldy     #$06
 	ldx     #$00
 	lda     (sp),y
 	asl     a
 	bcc     L000E
 	inx
-L000E:	ldy     #$03
+L000E:	ldy     #$04
 	jsr     addeqysp
+	ldy     #$01
 	clc
-	lda     #$01
-	adc     (sp)
-	bra     L0010
-L0005:	ldy     #$0E
+	tya
+	adc     (sp),y
+	jmp     L0010
+L0005:	ldy     #$02
+	lda     (sp),y
+	jsr     __draw_row_to_screen
+	ldy     #$0D
 	jmp     addysp
 
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_pixel_line_v (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
+; void __near__ draw_pixel_line_v (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
@@ -804,60 +904,60 @@ L0005:	ldy     #$0E
 	lda     #$00
 	jsr     pusha
 	jsr     decsp2
-	ldy     #$0C
-	lda     (sp),y
 	ldy     #$0A
+	lda     (sp),y
+	ldy     #$08
 	cmp     (sp),y
 	bcc     L0002
 	beq     L0002
-	ldy     #$0D
+	ldy     #$0B
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$0C
+	ldy     #$0A
 	lda     (sp),y
-	ldy     #$0E
+	ldy     #$0C
 	sta     (sp),y
 	lda     (sp)
-	ldy     #$0C
+	ldy     #$0A
 	sta     (sp),y
 	iny
 	lda     (sp),y
 	sta     (sp)
-	ldy     #$0B
+	ldy     #$09
 	lda     (sp),y
-	ldy     #$0D
+	ldy     #$0B
 	sta     (sp),y
 	lda     (sp)
-	ldy     #$0B
+	ldy     #$09
 	sta     (sp),y
 	jsr     incsp1
-L0002:	ldy     #$0B
+L0002:	ldy     #$09
 	lda     (sp),y
 	sec
-	ldy     #$0D
+	ldy     #$0B
 	sbc     (sp),y
 	ldy     #$06
 	sta     (sp),y
-	ldy     #$0A
+	ldy     #$08
 	lda     (sp),y
 	sec
-	ldy     #$0C
+	ldy     #$0A
 	sbc     (sp),y
 	ldy     #$05
 	sta     (sp),y
-	ldy     #$0D
-	lda     (sp),y
 	ldy     #$0B
+	lda     (sp),y
+	ldy     #$09
 	cmp     (sp),y
 	bcc     L0003
 	beq     L0003
 	lda     #$01
 	ldy     #$02
 	sta     (sp),y
-	ldy     #$0D
+	ldy     #$0B
 	lda     (sp),y
 	sec
-	ldy     #$0B
+	ldy     #$09
 	sbc     (sp),y
 	ldy     #$06
 	sta     (sp),y
@@ -877,35 +977,43 @@ L000C:	sec
 	pla
 	ldy     #$03
 	jsr     staxysp
-	ldy     #$0D
+	ldy     #$0B
 	lda     (sp),y
 	sta     (sp)
 	dey
 	lda     (sp),y
 	ldy     #$01
 	sta     (sp),y
-	ldy     #$0C
+	ldy     #$0A
 	lda     (sp),y
 	ldy     #$01
 L0010:	sta     (sp),y
-	ldy     #$0A
+	ldy     #$08
 	cmp     (sp),y
 	beq     L0011
-	bcs     L0005
+	jcs     L0005
 L0011:	lda     (sp)
 	jsr     pusha
 	ldy     #$02
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$0B
+	ldy     #$09
+	lda     (sp),y
+	jsr     _add_history_node_position
+	ldy     #$07
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$0B
+	lda     #$01
+	jsr     pusha
+	ldy     #$02
 	lda     (sp),y
 	jsr     pusha
-	ldy     #$0B
+	ldy     #$04
 	lda     (sp),y
-	jsr     _draw_brush_to_sprite
+	jsr     __draw_row_to_sprite
+	ldy     #$01
+	lda     (sp),y
+	jsr     __draw_row_to_screen
 	ldy     #$04
 	jsr     ldaxysp
 	cmp     #$01
@@ -945,8 +1053,509 @@ L000E:	ldy     #$03
 	clc
 	tya
 	adc     (sp),y
-	bra     L0010
-L0005:	ldy     #$0E
+	jmp     L0010
+L0005:	ldy     #$0C
+	jmp     addysp
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_brush_line_h (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_brush_line_h: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	jsr     decsp4
+	lda     #$00
+	jsr     pusha
+	jsr     decsp3
+	ldy     #$0E
+	lda     (sp),y
+	ldy     #$0C
+	cmp     (sp),y
+	bcc     L0002
+	beq     L0002
+	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$0F
+	sta     (sp),y
+	lda     (sp)
+	ldy     #$0D
+	sta     (sp),y
+	iny
+	lda     (sp),y
+	sta     (sp)
+	ldy     #$0C
+	lda     (sp),y
+	ldy     #$0E
+	sta     (sp),y
+	lda     (sp)
+	ldy     #$0C
+	sta     (sp),y
+	jsr     incsp1
+L0002:	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	ldy     #$0C
+	lda     (sp),y
+	sec
+	ldy     #$0E
+	sbc     (sp),y
+	ldy     #$07
+	sta     (sp),y
+	ldy     #$0B
+	lda     (sp),y
+	sec
+	ldy     #$0D
+	sbc     (sp),y
+	ldy     #$06
+	sta     (sp),y
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$0B
+	cmp     (sp),y
+	bcc     L0003
+	beq     L0003
+	lda     #$01
+	ldy     #$03
+	sta     (sp),y
+	ldy     #$0D
+	lda     (sp),y
+	sec
+	ldy     #$0B
+	sbc     (sp),y
+	ldy     #$06
+	sta     (sp),y
+L0003:	ldy     #$06
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0016
+	inx
+L0016:	sec
+	iny
+	sbc     (sp),y
+	pha
+	txa
+	sbc     #$00
+	tax
+	pla
+	ldy     #$04
+	jsr     staxysp
+	ldy     #$0E
+	lda     (sp),y
+	ldy     #$01
+	sta     (sp),y
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$02
+	sta     (sp),y
+	ldy     #$0E
+	lda     (sp),y
+	ldy     #$01
+L001E:	sta     (sp),y
+	ldy     #$0C
+	cmp     (sp),y
+	beq     L0021
+	bcs     L0023
+L0021:	ldy     #$01
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	ldy     #$05
+	jsr     ldaxysp
+	cmp     #$01
+	txa
+	sbc     #$00
+	bvs     L0009
+	eor     #$80
+L0009:	bpl     L0008
+	ldy     #$03
+	lda     (sp),y
+	beq     L000A
+	dey
+	lda     (sp),y
+	sec
+	sbc     #$01
+	bra     L001D
+L000A:	dey
+	clc
+	ina
+	adc     (sp),y
+L001D:	sta     (sp),y
+	ldy     #$07
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0017
+	inx
+L0017:	ldy     #$04
+	jsr     subeqysp
+L0008:	ldy     #$06
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0018
+	inx
+L0018:	ldy     #$04
+	jsr     addeqysp
+	ldy     #$01
+	clc
+	tya
+	adc     (sp),y
+	bra     L001E
+L0023:	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	ldy     #$03
+	lda     (sp),y
+	beq     L0020
+	lda     #$00
+L001F:	sta     (sp)
+	lda     (sp)
+	jsr     pusha0
+	ldy     #$0B
+	lda     (sp),y
+	clc
+	ldy     #$08
+	adc     (sp),y
+	bcc     L0019
+	inx
+L0019:	jsr     incax2
+	jsr     tosicmp
+	bpl     L0013
+	ldy     #$0B
+	lda     (sp),y
+	jsr     pusha0
+	ldy     #$0B
+	lda     (sp),y
+	lsr     a
+	jsr     tossuba0
+	sta     ptr1
+	lda     (sp)
+	clc
+	adc     ptr1
+	sec
+	sbc     #$01
+	jsr     __draw_row_to_screen
+	clc
+	lda     #$01
+	adc     (sp)
+	bra     L001F
+L0020:	sta     (sp)
+	lda     (sp)
+	jsr     pusha0
+	ldy     #$0B
+	lda     (sp),y
+	clc
+	ldy     #$08
+	adc     (sp),y
+	bcc     L001B
+	inx
+L001B:	jsr     incax2
+	jsr     tosicmp
+	bpl     L0013
+	ldy     #$0D
+	lda     (sp),y
+	jsr     pusha0
+	ldy     #$0B
+	lda     (sp),y
+	lsr     a
+	jsr     tossuba0
+	sta     ptr1
+	lda     (sp)
+	clc
+	adc     ptr1
+	sec
+	sbc     #$01
+	jsr     __draw_row_to_screen
+	clc
+	lda     #$01
+	adc     (sp)
+	bra     L0020
+L0013:	ldy     #$0F
+	jmp     addysp
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_brush_line_v (unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char col, unsigned char brush_size, unsigned char brush_type)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_brush_line_v: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	jsr     decsp4
+	lda     #$00
+	jsr     pusha
+	jsr     decsp3
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$0B
+	cmp     (sp),y
+	bcc     L0002
+	beq     L0002
+	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$0F
+	sta     (sp),y
+	lda     (sp)
+	ldy     #$0D
+	sta     (sp),y
+	iny
+	lda     (sp),y
+	sta     (sp)
+	ldy     #$0C
+	lda     (sp),y
+	ldy     #$0E
+	sta     (sp),y
+	lda     (sp)
+	ldy     #$0C
+	sta     (sp),y
+	jsr     incsp1
+L0002:	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0E
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	ldy     #$0C
+	lda     (sp),y
+	sec
+	ldy     #$0E
+	sbc     (sp),y
+	ldy     #$07
+	sta     (sp),y
+	ldy     #$0B
+	lda     (sp),y
+	sec
+	ldy     #$0D
+	sbc     (sp),y
+	ldy     #$06
+	sta     (sp),y
+	ldy     #$0E
+	lda     (sp),y
+	ldy     #$0C
+	cmp     (sp),y
+	bcc     L0003
+	beq     L0003
+	lda     #$01
+	ldy     #$03
+	sta     (sp),y
+	ldy     #$0E
+	lda     (sp),y
+	sec
+	ldy     #$0C
+	sbc     (sp),y
+	ldy     #$07
+	sta     (sp),y
+L0003:	ldy     #$07
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0010
+	inx
+L0010:	sec
+	dey
+	sbc     (sp),y
+	pha
+	txa
+	sbc     #$00
+	tax
+	pla
+	ldy     #$04
+	jsr     staxysp
+	ldy     #$0E
+	lda     (sp),y
+	ldy     #$01
+	sta     (sp),y
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$02
+	sta     (sp),y
+	ldy     #$0D
+	lda     (sp),y
+	ldy     #$02
+L0016:	sta     (sp),y
+	ldy     #$0B
+	cmp     (sp),y
+	beq     L0018
+	bcs     L0005
+L0018:	ldy     #$01
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	ldy     #$05
+	jsr     ldaxysp
+	cmp     #$01
+	txa
+	sbc     #$00
+	bvs     L0009
+	eor     #$80
+L0009:	bpl     L0008
+	ldy     #$03
+	lda     (sp),y
+	beq     L000A
+	ldy     #$01
+	lda     (sp),y
+	sec
+	sbc     #$01
+	bra     L0015
+L000A:	ldy     #$01
+	clc
+	tya
+	adc     (sp),y
+L0015:	sta     (sp),y
+	ldy     #$06
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0011
+	inx
+L0011:	ldy     #$04
+	jsr     subeqysp
+L0008:	ldy     #$07
+	ldx     #$00
+	lda     (sp),y
+	asl     a
+	bcc     L0012
+	inx
+L0012:	ldy     #$04
+	jsr     addeqysp
+	ldy     #$02
+	clc
+	lda     #$01
+	adc     (sp),y
+	jmp     L0016
+L0005:	iny
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$0C
+	lda     (sp),y
+	jsr     pusha
+	lda     #$00
+	jsr     _draw_brush_to_sprite
+	lda     #$00
+L0017:	sta     (sp)
+	lda     (sp)
+	jsr     pusha0
+	ldy     #$08
+	lda     (sp),y
+	clc
+	ldy     #$0B
+	adc     (sp),y
+	bcc     L0013
+	inx
+L0013:	jsr     incax2
+	jsr     tosicmp
+	bpl     L000D
+	ldy     #$0D
+	lda     (sp),y
+	jsr     pusha0
+	ldy     #$0B
+	lda     (sp),y
+	lsr     a
+	jsr     tossuba0
+	sta     ptr1
+	lda     (sp)
+	clc
+	adc     ptr1
+	sec
+	sbc     #$01
+	jsr     __draw_row_to_screen
+	clc
+	lda     #$01
+	adc     (sp)
+	bra     L0017
+L000D:	ldy     #$0F
 	jmp     addysp
 
 .endproc
@@ -1217,9 +1826,8 @@ L0008:	stz     _point_selected
 	lda     _line_brush_size
 	jsr     pusha
 	lda     _line_brush_type
-	jsr     _draw_pixel_line
+	jsr     _draw_brush_line
 	jsr     _add_new_history_node
-	jsr     __draw_canvas_to_screen
 	jmp     incsp4
 
 .endproc

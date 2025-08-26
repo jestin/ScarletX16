@@ -6,13 +6,16 @@
 #include "paint_ui.h"
 #include "paint_canvas.h"
 #include "history_stack.h"
+
 #include "sprite_tools/draw_tools_utils.h"
+#include "sprite_tools/brush_tool.h"
+#include "sprite_tools/tool_ui.h"
 
 #define LFN 15
 #define DEVICE 8
 #define SA 2
 #define MODE 0
-char filename[] = "breakfast.bmx";
+char filename[] = "arthur.bmx";
 void load_bmx_file(){
     u16 vram_addr = SPRITE_VRAM_DATA_ADDR;
     u8 ram_bank = 2;
@@ -96,6 +99,7 @@ int main(){
         get_keycode();
         handle_keyboard_input();
         tool_handler();
+        tool_ui_handler();
         // _draw_ui_element(0);
     }
 }

@@ -28,6 +28,7 @@
 	.export		_last_y
 	.export		_length_counter
 	.export		_curr_col
+	.export		_add_history_node_column
 
 .segment	"DATA"
 
@@ -307,6 +308,43 @@ L0004:	jsr     __get_history_byte
 	jsr     __draw_canvas_to_screen
 	jmp     incsp2
 L0002:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ add_history_node_column (unsigned char height, unsigned char x, unsigned char y, unsigned char colour)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_add_history_node_column: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	jsr     decsp1
+	lda     #$00
+L0007:	sta     (sp)
+	ldy     #$04
+	cmp     (sp),y
+	bcs     L0003
+	dey
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$01
+	lda     (sp),y
+	clc
+	ldy     #$03
+	adc     (sp),y
+	jsr     pusha
+	ldy     #$03
+	lda     (sp),y
+	jsr     _add_history_node_position
+	clc
+	lda     #$01
+	adc     (sp)
+	bra     L0007
+L0003:	jmp     incsp5
 
 .endproc
 

@@ -14,7 +14,7 @@ all: $(ALL_OBJS)
 
 run:
 	make
-	x16emu -run -startin export -prg export/SCARLET.PRG -quality nearest -scale 1 -debug
+	x16emu -run -startin export -prg export/SCARLET.PRG -quality nearest -scale 2 -debug
 
 debug:
 	make

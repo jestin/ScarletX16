@@ -5,6 +5,8 @@
 #include "ui_utils.h"
 #include "utils.h"
 
+#include "tool_ui.h"
+
 #define LAYER_SIZE 0x2000
 
 u32 tileset0_addr = 0x00000;

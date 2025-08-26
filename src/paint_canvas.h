@@ -61,6 +61,7 @@ extern void _transfer_sprite_to_vram(u16 size, u16 addr, u8 ram_bank);
 extern void handle_keyboard_input(void);
 
 extern void _draw_row_to_sprite(u8 pal_col, u8 width, u8 x, u8 y);
+extern void _draw_column_to_sprite(u8 pal_col, u8 height, u8 x, u8 y);
 extern u8 _get_pixel(u8 x, u8 y);
 
 extern u16 _image_data_size;
