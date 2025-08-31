@@ -2,6 +2,14 @@ ALL_ASM = $(wildcard src/*.asm) $(wildcard src/*.inc) $(wildcard src/*/*.asm) $(
 ALL_C = src/main.c
 ALL_OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c)) $(patsubst %.asm,%.obj,$(wildcard src/*.asm)) $(patsubst %.c,%.o,$(wildcard src/*/*.c)) $(patsubst %.asm,%.obj,$(wildcard src/*/*.asm))
 
+ifdef OS
+	RM = del /Q
+	FixPath = $(subst /,\,$1)
+else
+	RM = rm -f
+	FixPath = $1
+endif
+
 all: $(ALL_OBJS)
 	cl65 -t cx16 -Osir -Cl -C src/cx16-bank.cfg -o export/SCARLET.PRG $(ALL_OBJS)
 
@@ -21,20 +29,22 @@ debug:
 	box16 -run -hypercall_path export -prg SCARLET.PRG -quality nearest -scale 2
 
 clean:
-	del $(subst /,\, $(CURDIR)\src\*.s)
-	del $(subst /,\, $(CURDIR)\src\*.o)
-	del $(subst /,\, $(CURDIR)\src\*.obj)
-	del $(subst /,\, $(CURDIR)\src\*.list)
+	$(RM) $(call FixPath, $(CURDIR)/src/*.s)
+	$(RM) $(call FixPath, $(CURDIR)/src/*.o)
+	$(RM) $(call FixPath, $(CURDIR)/src/*.obj)
+	$(RM) $(call FixPath, $(CURDIR)/src/*.list)
 
-	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.s)
-	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.o)
-	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.obj)
-	del $(subst /,\, $(CURDIR)\src\sprite_tools\*.list)
+	$(RM) $(call FixPath, $(CURDIR)/src/sprite_tools/*.s)
+	$(RM) $(call FixPath, $(CURDIR)/src/sprite_tools/*.o)
+	$(RM) $(call FixPath, $(CURDIR)/src/sprite_tools/*.obj)
+	$(RM) $(call FixPath, $(CURDIR)/src/sprite_tools/*.list)
 
-# 	del $(subst /,\, $(CURDIR)\export\*.prg.*)
-# 	del $(subst /,\, $(CURDIR)\export\*.spr)
-# 	del $(subst /,\, $(CURDIR)\export\*.frm)
-# 	del $(subst /,\, $(CURDIR)\export\*.tim)
-# 	del $(subst /,\, $(CURDIR)\export\*.pal)
-# 	del $(subst /,\, $(CURDIR)\export\*.tset)
-# 	del $(subst /,\, $(CURDIR)\export\*.tmap)
+	$(RM) $(call FixPath, $(CURDIR)/export/SCARLET.PRG*)
+
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.prg.*)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.spr)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.frm)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.tim)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.pal)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.tset)
+# 	$(RM) $(call FixPath, $(CURDIR)/export/*.tmap)

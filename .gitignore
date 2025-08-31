@@ -1,0 +1,16 @@
+src/**/*.s
+src/**/*.o
+src/**/*.obj
+src/**/*.list
+export/*.PRG*
+
+# dumps
+dump*.bin
+
+# vim stuff
+*.swp
+*.un~
+*.swo
+
+# vscode stuff
+.vscode
