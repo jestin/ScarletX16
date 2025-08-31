@@ -13,6 +13,7 @@
 #define UI_BUTTON 5
 
 extern u8 create_ui_element(u8 parent_id, u8 type, u8 pos_x, u8 pos_y, u8 size_x, u8 size_y, u16 render_func, u16 mouse_func);
+extern u8 delete_ui_element(u8 id);
 extern void init_text_element(u8 ui_id, u16 text_ptr);
 extern void init_icon_element(u8 ui_id, u8 icon_addr, u16 variable_addr, u8 variable_value);
 extern void parse_mouse_input(void);

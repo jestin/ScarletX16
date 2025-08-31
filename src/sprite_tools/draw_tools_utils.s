@@ -590,7 +590,7 @@ L000C:	lda     _was_drawing_last_frame
 L0033:	stz     _was_drawing_last_frame
 	ldy     #$06
 	jsr     ldaxysp
-	cmp     #$F8
+	cmp     #$F0
 	txa
 	sbc     #$00
 	bcc     L0024
@@ -600,7 +600,7 @@ L0033:	stz     _was_drawing_last_frame
 	bne     L0020
 	dey
 	lda     (sp),y
-	cmp     #$38
+	cmp     #$30
 L0020:	bcs     L0024
 	ldy     #$04
 	jsr     ldaxysp
@@ -614,7 +614,7 @@ L0020:	bcs     L0024
 	bne     L0021
 	dey
 	lda     (sp),y
-	cmp     #$C0
+	cmp     #$E0
 L0021:	bcs     L0024
 	ldy     #$08
 	jsr     pushwysp
@@ -1940,7 +1940,7 @@ L0003:	rts
 	jsr     tosmula0
 	sta     _icon_y
 	stx     _icon_y+1
-	lda     #$F8
+	lda     #$F0
 	clc
 	adc     _icon_x
 	sta     _icon_x
@@ -1969,7 +1969,7 @@ L0003:	jmp     incsp1
 	jsr     pusha
 	ldy     #$04
 	jsr     ldaxysp
-	ldy     #$F8
+	ldy     #$F0
 	jsr     decaxy
 	jsr     pushax
 	lda     $0060

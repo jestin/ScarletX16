@@ -41,6 +41,8 @@
 	.import		_undo_last_history_node
 	.import		_tool_handler
 	.import		_set_pal_icon_sprites
+	.import		_tool_ui_handler
+	.import		_brush_ui_handler
 	.export		_filename
 	.export		_load_bmx_file
 	.export		_save_bmx_file
@@ -286,12 +288,14 @@ L000D:	lda     #$0F
 	jsr     __draw_ui_element
 	jsr     __draw_canvas_to_screen
 	jsr     _set_pal_icon_sprites
+	jsr     _brush_ui_handler
 L0002:	jsr     __wait_for_nmi
 	jsr     __get_mouse_input
 	jsr     _parse_mouse_input
 	jsr     _get_keycode
 	jsr     _handle_keyboard_input
 	jsr     _tool_handler
+	jsr     _tool_ui_handler
 	bra     L0002
 
 .endproc

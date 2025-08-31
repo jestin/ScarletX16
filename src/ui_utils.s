@@ -11,6 +11,7 @@
 	.importzp	tmp1, tmp2, tmp3, tmp4, ptr1, ptr2, ptr3, ptr4
 	.macpack	longbranch
 	.export		_create_ui_element
+	.export		_delete_ui_element
 	.export		_init_text_element
 	.export		_init_icon_element
 	.export		_parse_mouse_input
@@ -38,12 +39,21 @@
 	.import		__ui_last_child
 	.import		__ui_next_sib
 	.import		__ui_prev_sib
-	.export		_delete_ui_element
+	.import		__draw_ui_element
+	.export		_delete_ui_stack
+	.export		_del_stack_index
+
+.segment	"DATA"
+
+_del_stack_index:
+	.byte	$00
 
 .segment	"BSS"
 
 _keycode:
 	.res	1,$00
+_delete_ui_stack:
+	.res	20,$00
 
 ; ---------------------------------------------------------------
 ; unsigned char __near__ create_ui_element (unsigned char parent_id, unsigned char type, unsigned char pos_x, unsigned char pos_y, unsigned char size_x, unsigned char size_y, unsigned int render_func, unsigned int mouse_func)
@@ -207,6 +217,40 @@ L0004:	clc
 	jmp     L0020
 L0003:	ldy     #$0B
 	jmp     addysp
+
+.endproc
+
+; ---------------------------------------------------------------
+; unsigned char __near__ delete_ui_element (unsigned char id)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_delete_ui_element: near
+
+.segment	"CODE"
+
+	jsr     pusha
+	lda     (sp)
+	tay
+	lda     __ui_first_child,y
+	jsr     pusha
+	stz     _del_stack_index
+	lda     (sp)
+	ldy     _del_stack_index
+	sta     _delete_ui_stack,y
+	inc     _del_stack_index
+	ldy     #$01
+	lda     (sp),y
+	tay
+	lda     #$00
+	sta     __ui_type,y
+	ldy     #$01
+	lda     (sp),y
+	tay
+	lda     __ui_parent,y
+	jsr     __draw_ui_element
+	jmp     incsp2
 
 .endproc
 
@@ -504,21 +548,6 @@ L0013:	ldy     #$07
 	lda     (sp),y
 	jsr     incsp1
 	jmp     incsp7
-
-.endproc
-
-; ---------------------------------------------------------------
-; unsigned char __near__ delete_ui_element (unsigned char id)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_delete_ui_element: near
-
-.segment	"CODE"
-
-	jsr     pusha
-	jmp     incsp1
 
 .endproc
 

@@ -91,6 +91,8 @@ int main(){
     _draw_canvas_to_screen();
     set_pal_icon_sprites();
 
+    brush_ui_handler();
+
     while(1){
         _wait_for_nmi();
 

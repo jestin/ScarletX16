@@ -3,6 +3,7 @@
 
 #include "../utils.h"
 
-extern void tool_ui_handler(void);
+extern void tool_ui_handler();
+extern void brush_ui_handler();
 
 #endif//TOOL_UI

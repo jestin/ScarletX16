@@ -380,8 +380,8 @@ void get_sprite_position(u8 colour){
     icon_x = (colour%PAL_SPR_ROWS)*PAL_SPR_WIDTH;
     icon_y = (colour/PAL_SPR_ROWS)*PAL_SPR_HEIGHT;
 
-    icon_x += 248;
-    icon_y += 96;
+    icon_x += PAL_SPR_X;
+    icon_y += PAL_SPR_Y;
 }
 
 void set_pal_icon_sprites(){
@@ -397,8 +397,8 @@ void set_pal_icon_sprites(){
 }
 
 void palette_selection_handler(u16 mouse_x, u16 mouse_y, u8 mouse_buttons){
-    u8 pal_x = (mouse_x-248)/PAL_SPR_WIDTH;
-    u8 pal_y = (mouse_y-96)/PAL_SPR_HEIGHT;
+    u8 pal_x = (mouse_x-PAL_SPR_X)/PAL_SPR_WIDTH;
+    u8 pal_y = (mouse_y-PAL_SPR_Y)/PAL_SPR_HEIGHT;
     u8 col = pal_x + pal_y*PAL_SPR_ROWS;
 
     if(col < (*bmx_no_pals)){
@@ -442,7 +442,7 @@ void tool_handler(){
             if(was_drawing_last_frame) add_new_history_node();
             was_drawing_last_frame = 0;
             
-            if(mouse_x >= 248 && mouse_x < 312 && mouse_y >= 96 && mouse_y < 192){
+            if(mouse_x >= PAL_SPR_X && mouse_x < PAL_SPR_X+64 && mouse_y >= PAL_SPR_Y && mouse_y < PAL_SPR_Y+128){
                 palette_selection_handler(mouse_x, mouse_y, mouse_buttons);
             }
         }

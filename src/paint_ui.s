@@ -22,6 +22,10 @@
 	.export		_set_layer_config
 	.export		_initialize_paint_ui
 	.export		_change_tool
+	.export		_header_container_id
+	.export		_tool_container_id
+	.export		_palette_container_id
+	.export		_context_container_id
 	.import		_create_ui_element
 	.import		_init_text_element
 	.import		_init_icon_element
@@ -45,10 +49,6 @@
 	.export		_tileset1_addr
 	.export		_tilemap0_addr
 	.export		_tilemap1_addr
-	.export		_palette_container_id
-	.export		_tool_container_id
-	.export		_header_container_id
-	.export		_context_container_id
 	.export		_pal_text
 	.export		_initialize_palette_ui
 	.export		_tool_text
@@ -84,11 +84,11 @@ S0005:
 
 .segment	"BSS"
 
-_palette_container_id:
+_header_container_id:
 	.res	1,$00
 _tool_container_id:
 	.res	1,$00
-_header_container_id:
+_palette_container_id:
 	.res	1,$00
 _context_container_id:
 	.res	1,$00
@@ -214,11 +214,11 @@ _context_container_id:
 	jsr     pusha
 	lda     #$02
 	jsr     pusha
-	lda     #$1E
+	lda     #$1C
 	jsr     pusha
 	lda     #$03
 	jsr     pusha
-	lda     #$0A
+	lda     #$0C
 	jsr     pusha
 	lda     #$07
 	jsr     pusha
@@ -233,10 +233,11 @@ _context_container_id:
 	jsr     pusha
 	lda     #$02
 	jsr     pusha
-	lda     #$1E
+	lda     #$1C
 	jsr     pusha
 	lda     #$0A
 	jsr     pusha
+	lda     #$0C
 	jsr     pusha
 	lda     #$14
 	jsr     pusha
@@ -247,6 +248,25 @@ _context_container_id:
 	txa
 	jsr     _create_ui_element
 	sta     _palette_container_id
+	lda     #$00
+	jsr     pusha
+	lda     #$02
+	jsr     pusha
+	lda     #$00
+	jsr     pusha
+	lda     #$17
+	jsr     pusha
+	lda     #$1C
+	jsr     pusha
+	lda     #$07
+	jsr     pusha
+	lda     #<(__draw_ui_box)
+	ldx     #>(__draw_ui_box)
+	jsr     pushax
+	ldx     #$00
+	txa
+	jsr     _create_ui_element
+	sta     _context_container_id
 	jsr     _initialize_palette_ui
 	lda     #$07
 	jsr     pusha
@@ -255,7 +275,7 @@ _context_container_id:
 	jsr     pushax
 	ina
 	jsr     pusha
-	lda     #$F8
+	lda     #$F0
 	jsr     pusha0
 	lda     #$60
 	jsr     pusha0
@@ -272,7 +292,7 @@ _context_container_id:
 	jsr     pushax
 	lda     #$01
 	jsr     pusha
-	lda     #$F8
+	lda     #$F0
 	jsr     pusha0
 	lda     #$A0
 	jsr     pusha0
@@ -359,7 +379,9 @@ L000F:	lda     _tool_container_id
 	jsr     pusha
 	lda     #$01
 	jsr     pusha
+	ina
 	jsr     pusha
+	dea
 	jsr     pusha
 	dea
 	jsr     pusha
@@ -394,9 +416,8 @@ L000F:	lda     _tool_container_id
 .segment	"CODE"
 
 	jsr     decsp1
-	lda     #$01
+	lda     #$02
 	jsr     pusha
-	ina
 	jsr     pusha
 	jsr     decsp1
 	lda     #$00
@@ -405,7 +426,9 @@ L000F:	lda     _tool_container_id
 	jsr     pusha
 	lda     #$01
 	jsr     pusha
+	ina
 	jsr     pusha
+	dea
 	jsr     pusha
 	dea
 	jsr     pusha
@@ -486,12 +509,11 @@ L0006:	ldy     #$01
 	lda     (sp),y
 	cmp     #$03
 	bne     L000B
-	lda     #$01
+	dea
 	dey
 	sta     (sp),y
 	dey
 	clc
-	ina
 	adc     (sp),y
 	sta     (sp),y
 	ldy     #$05

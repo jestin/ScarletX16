@@ -41,8 +41,27 @@ u8 create_ui_element(u8 parent_id, u8 type, u8 pos_x, u8 pos_y, u8 size_x, u8 si
     }
 }
 
+u8 delete_ui_stack[20];
+u8 del_stack_index = 0;
 u8 delete_ui_element(u8 id){
+    u8 curr_ui_id = _ui_first_child[id];
+    del_stack_index = 0;
+    delete_ui_stack[del_stack_index] = curr_ui_id;
+    del_stack_index += 1;
 
+    _ui_type[id] = 0;
+
+    // while(1){
+    //     curr_ui_id = delete_ui_stack[del_stack_index-1];
+    //     _ui_type[curr_ui_id] = 0;
+    //     del_stack_index -= 1;
+
+    //     if(_ui_first_child[curr_ui_id] != 0){
+    //         delete_ui_stack[del_stack_index] = _ui_first_child[curr_ui_id];
+    //     }
+    // }
+
+    _draw_ui_element(_ui_parent[id]);
 }
 
 u8 keycode;
@@ -105,4 +124,6 @@ void init_icon_element(u8 ui_id, u8 icon_addr, u16 variable_addr, u8 variable_va
     _ui_var_2[ui_id] = variable_addr;
     _ui_var_3[ui_id] = variable_addr>>8;
     _ui_var_4[ui_id] = variable_value;
+    // (*(u8 *)0x0041) = ui_id;
+    // _force_halt();
 }

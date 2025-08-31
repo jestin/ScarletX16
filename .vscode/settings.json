@@ -4,6 +4,8 @@
         "utils.h": "c",
         "draw_tools_utils.h": "c",
         "ui_utils.h": "c",
-        "history_stack.h": "c"
+        "history_stack.h": "c",
+        "tool_ui.h": "c",
+        "tool_globals.h": "c"
     }
 }
